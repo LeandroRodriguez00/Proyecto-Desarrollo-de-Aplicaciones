@@ -1,20 +1,21 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Provider } from 'react-redux';
+import AppNavigator from './src/navigation/AppNavigator';
+import store from './src/redux/store';
+import { fetchCartFromStorage } from './src/services/storage';
 
 export default function App() {
+  useEffect(() => {
+    const initializeStorage = async () => {
+      await fetchCartFromStorage();
+    };
+
+    initializeStorage();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={store}>
+      <AppNavigator />
+    </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
