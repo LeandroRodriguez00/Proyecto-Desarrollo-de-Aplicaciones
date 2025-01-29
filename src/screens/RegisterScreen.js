@@ -6,77 +6,69 @@ import {
   Alert,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Image,
+  ScrollView,
 } from "react-native";
-import { useDispatch } from "react-redux";
-import { loginUser, registerUser } from "../services/authService";
-import { loadCartFromFirebase } from "../redux/cartSlice";
+import { useNavigation } from "@react-navigation/native";
+import { registerUser } from "../services/authService";
 
-export default function LoginScreen({ navigation }) {
+export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useDispatch();
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const navigation = useNavigation();
 
   const showAlert = (title, message) => {
     Alert.alert(title, message);
   };
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      showAlert("❌ Error", "Todos los campos son obligatorios.");
-      return;
-    }
-
-    try {
-      await loginUser(email, password);
-      showAlert("✅ Inicio de sesión exitoso", "Bienvenido!");
-
-      dispatch(loadCartFromFirebase());
-
-      navigation.navigate("Home");
-    } catch (error) {
-      showAlert("❌ Error", error?.message || "Ocurrió un error inesperado.");
-    }
-  };
-
   const handleRegister = async () => {
-    if (!email.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim() || !fullName.trim() || !phone.trim() || !address.trim() || !city.trim() || !zipCode.trim()) {
       showAlert("❌ Error", "Todos los campos son obligatorios.");
       return;
     }
 
     try {
-      await registerUser(email, password);
+      await registerUser(email, password, fullName, phone, address, city, zipCode);
       showAlert("✅ Registro exitoso", "Ahora puedes iniciar sesión.");
+      navigation.navigate("Login");
     } catch (error) {
       showAlert("❌ Error", error?.message || "No se pudo completar el registro.");
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        
+        {/* 🔥 IMAGEN MÁS GRANDE */}
         <View style={styles.logoContainer}>
-          <Image source={require("../../assets/6537937.jpg")} style={styles.logo} />
+          <Image source={require("../../assets/register.jpg")} style={styles.logo} />
         </View>
 
         <View style={styles.formContainer}>
-          <Text style={styles.title}>🔐 Iniciar Sesión</Text>
+          <Text style={styles.title}>📝 Crear Cuenta</Text>
+
+          <TextInput
+            placeholder="Nombre y Apellido"
+            placeholderTextColor="#C4C4C4"
+            value={fullName}
+            onChangeText={setFullName}
+            style={styles.input}
+          />
 
           <TextInput
             placeholder="Correo electrónico"
             placeholderTextColor="#C4C4C4"
             value={email}
             onChangeText={setEmail}
-            style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
+            style={styles.input}
           />
 
           <TextInput
@@ -88,17 +80,58 @@ export default function LoginScreen({ navigation }) {
             style={styles.input}
           />
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.buttonText}>🚀 Iniciar Sesión</Text>
+          <TextInput
+            placeholder="Número de Teléfono"
+            placeholderTextColor="#C4C4C4"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Dirección"
+            placeholderTextColor="#C4C4C4"
+            value={address}
+            onChangeText={setAddress}
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Ciudad"
+            placeholderTextColor="#C4C4C4"
+            value={city}
+            onChangeText={setCity}
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Código Postal"
+            placeholderTextColor="#C4C4C4"
+            value={zipCode}
+            onChangeText={setZipCode}
+            keyboardType="numeric"
+            style={styles.input}
+          />
+
+          <TouchableOpacity 
+            style={styles.registerButton} 
+            activeOpacity={0.8} 
+            onPress={handleRegister}
+          >
+            <Text style={styles.buttonText}>✅ Registrarse</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate("Register")}>
-           <Text style={styles.buttonText}>📝 Registrarse</Text>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            activeOpacity={0.8} 
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={styles.buttonText}>🔙 Volver al Login</Text>
           </TouchableOpacity>
-
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -114,20 +147,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logoContainer: {
+    width: "100%",
     alignItems: "center",
     marginBottom: 20,
   },
   logo: {
-    width: 250,
-    height: 250,
-    borderRadius: 120, 
-    borderWidth: 2,
-    borderColor: "#4A90E2",
-    resizeMode: "cover",
+    width: "100%",  
+    height: 300,    
+    resizeMode: "contain",
   },
   formContainer: {
     backgroundColor: "#2E3A46",
-    width: "100%",
     padding: 25,
     borderRadius: 15,
     alignItems: "center",
@@ -135,6 +165,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 5,
+    width: "100%",
   },
   title: {
     fontSize: 24,
@@ -152,9 +183,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#4A90E2", 
+    borderColor: "#4A90E2",
   },
-  loginButton: {
+  registerButton: {
     backgroundColor: "#4A90E2",
     padding: 15,
     borderRadius: 12,
@@ -166,7 +197,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  registerButton: {
+  backButton: {
     backgroundColor: "#6C757D",
     padding: 15,
     borderRadius: 12,
@@ -184,4 +215,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-

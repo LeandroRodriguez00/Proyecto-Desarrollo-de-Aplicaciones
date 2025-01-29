@@ -1,11 +1,12 @@
 import React, { useEffect, useCallback } from "react";
-import { View, Text, FlatList, StyleSheet, Button, Alert } from "react-native";
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { replaceCart, removeItem, clearCart } from "../redux/cartSlice";
 import { fetchCartFromStorage, saveCartToStorage } from "../services/storage";
 import { ref, get, set } from "firebase/database";
 import { database } from "../services/firebaseConfig";
 import { saveOrderToFirebase } from "../services/orderService";
+import { FAB } from "react-native-paper";
 
 export default function CartScreen() {
   const dispatch = useDispatch();
@@ -83,12 +84,15 @@ export default function CartScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Carrito de Compras</Text>
-      <Button title="GUARDAR CARRITO EN FIREBASE" color="#007bff" onPress={saveCartToFirebase} />
+      <Text style={styles.title}>🛒 Carrito de Compras</Text>
+
+      <TouchableOpacity style={styles.saveButton} onPress={saveCartToFirebase}>
+        <Text style={styles.buttonText}>💾 Guardar Carrito</Text>
+      </TouchableOpacity>
 
       {validCartItems.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No hay productos válidos en el carrito.</Text>
+          <Text style={styles.emptyText}>No hay productos en el carrito.</Text>
         </View>
       ) : (
         <>
@@ -98,27 +102,115 @@ export default function CartScreen() {
             renderItem={({ item }) => (
               <View style={styles.item}>
                 <Text style={styles.itemText}>{item.name}</Text>
-                <Text style={styles.itemText}>${item.price.toFixed(2)}</Text>
-                <Text style={styles.itemText}>Cantidad: {item.quantity || 1}</Text>
-                <Button title="ELIMINAR" color="red" onPress={() => dispatch(removeItem(item.id))} />
+                <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+                <Text style={styles.itemQuantity}>Cantidad: {item.quantity || 1}</Text>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => dispatch(removeItem(item.id))}
+                >
+                  <Text style={styles.buttonText}>❌ Eliminar</Text>
+                </TouchableOpacity>
               </View>
             )}
           />
           <Text style={styles.totalText}>Total: ${total.toFixed(2)}</Text>
-          <Button title="COMPRAR" color="green" onPress={handlePurchase} />
+
+          <TouchableOpacity style={styles.buyButton} onPress={handlePurchase}>
+            <Text style={styles.buttonText}>🛍️ Comprar</Text>
+          </TouchableOpacity>
         </>
       )}
+
+      <FAB style={styles.fab} icon="cart" label="Ir a Tienda" onPress={() => {}} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyText: { fontSize: 18, textAlign: "center", color: "#666" },
-  item: { padding: 15, marginVertical: 10, backgroundColor: "#fff", borderRadius: 5 },
-  itemText: { fontSize: 18, color: "#333" },
-  totalText: { fontSize: 20, fontWeight: "bold", textAlign: "center", marginTop: 10 },
+  container: {
+    flex: 1,
+    backgroundColor: "#222831",
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 15,
+    color: "#EEEEEE", 
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "#C4C4C4", 
+  },
+  item: {
+    backgroundColor: "#2E3A46", 
+    padding: 15,
+    marginVertical: 8,
+    borderRadius: 10,
+    shadowColor: "#4A90E2",
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+    borderLeftWidth: 4,
+    borderLeftColor: "#4A90E2", 
+  },
+  itemText: {
+    fontSize: 18,
+    color: "#EEEEEE",
+  },
+  itemPrice: {
+    fontSize: 16,
+    color: "#4A90E2", 
+    marginTop: 5,
+  },
+  itemQuantity: {
+    fontSize: 14,
+    color: "#C4C4C4",
+  },
+  deleteButton: {
+    marginTop: 10,
+    backgroundColor: "#D32F2F",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  buyButton: {
+    backgroundColor: "#4A90E2",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  saveButton: {
+    backgroundColor: "#4A90E2",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  totalText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#4A90E2",
+    textAlign: "center",
+    marginVertical: 15,
+  },
+  fab: {
+    position: "absolute",
+    margin: 16,
+    right: 0,
+    bottom: 10,
+    backgroundColor: "#4A90E2",
+  },
 });
-

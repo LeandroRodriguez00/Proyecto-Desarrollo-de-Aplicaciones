@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { saveCartToFirebase, fetchCartFromFirebase, clearCartFromFirebase } from "../services/cartService";
+import { saveCartToStorage, fetchCartFromStorage } from "../services/storage";
 
 const initialState = {
   items: [],
@@ -19,16 +20,18 @@ const cartSlice = createSlice({
 
       try {
         saveCartToFirebase(state.items);
+        saveCartToStorage(state.items); 
       } catch (error) {
-        console.warn("Error al guardar el carrito en Firebase:", error);
+        console.warn("Error al guardar el carrito:", error);
       }
     },
 
     removeItem: (state, action) => {
       state.items = state.items.filter(item => item.id !== action.payload);
-      
+
       try {
-        saveCartToFirebase(state.items);
+        saveCartToFirebase(state.items); 
+        saveCartToStorage(state.items); 
       } catch (error) {
         console.warn("Error al actualizar el carrito en Firebase:", error);
       }
@@ -39,6 +42,7 @@ const cartSlice = createSlice({
 
       try {
         clearCartFromFirebase();
+        saveCartToStorage([]); 
       } catch (error) {
         console.warn("Error al borrar el carrito en Firebase:", error);
       }
@@ -51,10 +55,12 @@ const cartSlice = createSlice({
 });
 
 export const { addItem, removeItem, clearCart, replaceCart } = cartSlice.actions;
+
 export const loadCartFromFirebase = () => async (dispatch) => {
   try {
     const cart = await fetchCartFromFirebase();
     dispatch(replaceCart(cart ?? []));
+    saveCartToStorage(cart ?? []); 
   } catch (error) {
     console.warn("Error al cargar el carrito desde Firebase:", error);
   }

@@ -1,9 +1,9 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getDatabase } from "firebase/database";
+import { getFirestore } from "firebase/firestore"; 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Configuración de Firebase (¡Usar variables de entorno para producción!)
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,  
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -14,17 +14,14 @@ const firebaseConfig = {
   appId: process.env.FIREBASE_APP_ID,
 };
 
-// Inicializar Firebase App (evitar múltiples instancias)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Configurar Firebase Authentication con persistencia
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
 
-// Inicializar Firebase Database
 const database = getDatabase(app);
+const db = getFirestore(app); 
 
-// Exportar módulos de Firebase
-export { auth, database };
+export { auth, database, db }; 
 export default app;

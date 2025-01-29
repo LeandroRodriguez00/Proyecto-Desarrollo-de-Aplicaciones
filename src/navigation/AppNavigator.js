@@ -7,13 +7,21 @@ import ProductDetailsScreen from "../screens/ProductDetailsScreen";
 import CartScreen from "../screens/CartScreen";
 import LocationScreen from "../screens/LocationScreen";
 import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen"; 
 
 const Stack = createStackNavigator();
 
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator
+        initialRouteName="Login"
+        screenOptions={{
+          headerStyle: styles.header,
+          headerTintColor: "#EEEEEE", 
+          headerTitleStyle: styles.headerTitle,
+        }}
+      >
         <Stack.Screen 
           name="Login" 
           component={LoginScreen} 
@@ -21,10 +29,16 @@ export default function AppNavigator() {
         />
 
         <Stack.Screen 
+          name="Register" 
+          component={RegisterScreen} 
+          options={{ title: "📝 Registro" }} 
+        />
+
+        <Stack.Screen 
           name="Home" 
           component={HomeScreen} 
           options={({ navigation }) => ({
-            title: "Tienda",
+            title: "🛍️ Tienda",
             headerRight: () => <HeaderButton icon="🛒" onPress={() => navigation.navigate("Cart")} />,
           })} 
         />
@@ -32,14 +46,14 @@ export default function AppNavigator() {
         <Stack.Screen 
           name="ProductDetails" 
           component={ProductDetailsScreen} 
-          options={{ title: "Detalles del Producto" }} 
+          options={{ title: "📄 Detalles del Producto" }} 
         />
 
         <Stack.Screen 
           name="Cart" 
           component={CartScreen} 
           options={({ navigation }) => ({
-            title: "Carrito de Compras",
+            title: "🛒 Carrito de Compras",
             headerRight: () => <HeaderButton icon="📍" onPress={() => navigation.navigate("Location")} />,
           })} 
         />
@@ -47,7 +61,7 @@ export default function AppNavigator() {
         <Stack.Screen 
           name="Location" 
           component={LocationScreen} 
-          options={{ title: "Tu Ubicación" }} 
+          options={{ title: "📍 Tu Ubicación" }} 
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -61,10 +75,27 @@ const HeaderButton = ({ icon, onPress }) => (
 );
 
 const styles = StyleSheet.create({
+  header: {
+    backgroundColor: "#222831", 
+    elevation: 5,
+    shadowColor: "#4A90E2", 
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#EEEEEE", 
+  },
   headerButton: {
     marginRight: 15,
+    padding: 8,
+    borderRadius: 10,
+    backgroundColor: "#4A90E2", 
   },
   headerText: {
-    fontSize: 20,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FFFFFF",
   },
 });
