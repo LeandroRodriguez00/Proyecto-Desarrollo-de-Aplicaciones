@@ -19,8 +19,9 @@ export default function HomeScreen({ navigation }) {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const loadProducts = useCallback(async () => {
+    setLoading(true);
+
     try {
-      setLoading(true);
       const data = await fetchProducts();
       setProducts(
         Array.isArray(data)
@@ -37,7 +38,7 @@ export default function HomeScreen({ navigation }) {
       console.warn("Error al cargar productos:", error);
       Alert.alert("Error", "No se pudieron cargar los productos. Intenta de nuevo.");
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   }, []);
 
@@ -89,7 +90,7 @@ export default function HomeScreen({ navigation }) {
         </Animated.View>
       )}
 
-      {/* Botón flotante premium */}
+      {}
       <FAB
         style={styles.fab}
         icon="cart"

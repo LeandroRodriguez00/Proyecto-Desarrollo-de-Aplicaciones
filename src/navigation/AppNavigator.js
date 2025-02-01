@@ -8,6 +8,7 @@ import CartScreen from "../screens/CartScreen";
 import LocationScreen from "../screens/LocationScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen"; 
+import OrdersScreen from "../screens/OrdersScreen"; 
 
 const Stack = createStackNavigator();
 
@@ -56,6 +57,12 @@ export default function AppNavigator() {
             title: "🛒 Carrito de Compras",
             headerRight: () => <HeaderButton icon="📍" onPress={() => navigation.navigate("Location")} />,
           })} 
+        />
+
+        <Stack.Screen 
+          name="Orders" 
+          component={OrdersScreen} 
+          options={{ title: "📦 Mis Compras" }} 
         />
 
         <Stack.Screen 

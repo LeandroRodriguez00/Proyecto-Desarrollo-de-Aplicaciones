@@ -1,41 +1,16 @@
-import React, { useEffect, useCallback } from "react";
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import React, { useEffect, useCallback, useState } from "react";
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { replaceCart, removeItem, clearCart } from "../redux/cartSlice";
 import { fetchCartFromStorage, saveCartToStorage } from "../services/storage";
 import { ref, get, set } from "firebase/database";
 import { database } from "../services/firebaseConfig";
 import { saveOrderToFirebase } from "../services/orderService";
-import { FAB } from "react-native-paper";
 
 export default function CartScreen() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
-
-  const loadCartItems = useCallback(async () => {
-    try {
-      const storedCart = await fetchCartFromStorage();
-      if (storedCart.length > 0) {
-        dispatch(replaceCart(storedCart));
-        return;
-      }
-
-      const dbRef = ref(database, "cart/");
-      const snapshot = await get(dbRef);
-      if (snapshot.exists()) {
-        const firebaseCart = Object.values(snapshot.val());
-        dispatch(replaceCart(firebaseCart));
-        await saveCartToStorage(firebaseCart);
-      }
-    } catch (error) {
-      console.warn("Error al cargar el carrito:", error);
-      Alert.alert("Error", "No se pudo cargar el carrito.");
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    loadCartItems();
-  }, [loadCartItems]);
+  const [loading, setLoading] = useState(false);
 
   const validCartItems = cartItems.filter(
     (item) => item?.id && item?.name && typeof item?.price === "number"
@@ -46,39 +21,28 @@ export default function CartScreen() {
     0
   );
 
-  const saveCartToFirebase = async () => {
-    if (validCartItems.length === 0) {
-      Alert.alert("Error", "No hay productos válidos en el carrito.");
-      return;
-    }
-
-    try {
-      await set(ref(database, "cart/"), validCartItems);
-      Alert.alert("✅ Carrito guardado", "El carrito se guardó en la nube.");
-    } catch (error) {
-      console.warn("Error al guardar el carrito en Firebase:", error);
-      Alert.alert("Error", "No se pudo guardar el carrito.");
-    }
-  };
-
   const handlePurchase = async () => {
     if (validCartItems.length === 0) {
       Alert.alert("Carrito vacío", "No hay productos válidos en el carrito.");
       return;
     }
 
+    setLoading(true);
+
     try {
       const order = await saveOrderToFirebase(validCartItems, total);
       if (order) {
-        Alert.alert("✅ Compra realizada", "Tu pedido ha sido registrado.");
+        Alert.alert("Compra realizada", "Tu pedido ha sido registrado.");
         dispatch(clearCart());
         await saveCartToStorage([]);
       } else {
-        Alert.alert("❌ Error", "No se pudo procesar la compra.");
+        Alert.alert("Error", "No se pudo procesar la compra.");
       }
     } catch (error) {
       console.warn("Error al procesar la compra:", error);
       Alert.alert("Error", "Ocurrió un problema al finalizar la compra.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -86,42 +50,46 @@ export default function CartScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>🛒 Carrito de Compras</Text>
 
-      <TouchableOpacity style={styles.saveButton} onPress={saveCartToFirebase}>
-        <Text style={styles.buttonText}>💾 Guardar Carrito</Text>
-      </TouchableOpacity>
-
-      {validCartItems.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No hay productos en el carrito.</Text>
-        </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#4A90E2" />
       ) : (
         <>
-          <FlatList
-            data={validCartItems}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.item}>
-                <Text style={styles.itemText}>{item.name}</Text>
-                <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
-                <Text style={styles.itemQuantity}>Cantidad: {item.quantity || 1}</Text>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => dispatch(removeItem(item.id))}
-                >
-                  <Text style={styles.buttonText}>❌ Eliminar</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-          <Text style={styles.totalText}>Total: ${total.toFixed(2)}</Text>
+          {validCartItems.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No hay productos en el carrito.</Text>
+            </View>
+          ) : (
+            <>
+              <FlatList
+                data={validCartItems}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.item}>
+                    <Text style={styles.itemText}>{item.name}</Text>
+                    <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+                    <Text style={styles.itemQuantity}>Cantidad: {item.quantity || 1}</Text>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => dispatch(removeItem(item.id))}
+                    >
+                      <Text style={styles.buttonText}>❌ Eliminar</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+              <Text style={styles.totalText}>Total: ${total.toFixed(2)}</Text>
 
-          <TouchableOpacity style={styles.buyButton} onPress={handlePurchase}>
-            <Text style={styles.buttonText}>🛍️ Comprar</Text>
-          </TouchableOpacity>
+              <TouchableOpacity style={styles.buyButton} onPress={handlePurchase} disabled={loading}>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.buttonText}> Comprar</Text>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
         </>
       )}
-
-      <FAB style={styles.fab} icon="cart" label="Ir a Tienda" onPress={() => {}} />
     </View>
   );
 }
@@ -187,13 +155,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-  saveButton: {
-    backgroundColor: "#4A90E2",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 10,
-  },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
@@ -205,12 +166,5 @@ const styles = StyleSheet.create({
     color: "#4A90E2",
     textAlign: "center",
     marginVertical: 15,
-  },
-  fab: {
-    position: "absolute",
-    margin: 16,
-    right: 0,
-    bottom: 10,
-    backgroundColor: "#4A90E2",
   },
 });

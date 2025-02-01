@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  ActivityIndicator, 
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { loginUser, registerUser } from "../services/authService";
@@ -18,6 +19,7 @@ import { loadCartFromFirebase } from "../redux/cartSlice";
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false); 
   const dispatch = useDispatch();
 
   const showAlert = (title, message) => {
@@ -26,33 +28,37 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      showAlert("❌ Error", "Todos los campos son obligatorios.");
+      showAlert("Error", "Todos los campos son obligatorios.");
       return;
     }
 
+    setLoading(true); 
+
     try {
       await loginUser(email, password);
-      showAlert("✅ Inicio de sesión exitoso", "Bienvenido!");
+      showAlert("Inicio de sesión exitoso", "Bienvenido!");
 
       dispatch(loadCartFromFirebase());
 
       navigation.navigate("Home");
     } catch (error) {
-      showAlert("❌ Error", error?.message || "Ocurrió un error inesperado.");
+      showAlert("Error", error?.message || "Ocurrió un error inesperado.");
+    } finally {
+      setLoading(false); 
     }
   };
 
   const handleRegister = async () => {
     if (!email.trim() || !password.trim()) {
-      showAlert("❌ Error", "Todos los campos son obligatorios.");
+      showAlert("Error", "Todos los campos son obligatorios.");
       return;
     }
 
     try {
       await registerUser(email, password);
-      showAlert("✅ Registro exitoso", "Ahora puedes iniciar sesión.");
+      showAlert("Registro exitoso", "Ahora puedes iniciar sesión.");
     } catch (error) {
-      showAlert("❌ Error", error?.message || "No se pudo completar el registro.");
+      showAlert("Error", error?.message || "No se pudo completar el registro.");
     }
   };
 
@@ -88,14 +94,18 @@ export default function LoginScreen({ navigation }) {
             style={styles.input}
           />
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.buttonText}>🚀 Iniciar Sesión</Text>
-          </TouchableOpacity>
+          {}
+          {loading ? (
+            <ActivityIndicator size="large" color="#4A90E2" />
+          ) : (
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+              <Text style={styles.buttonText}>🚀 Iniciar Sesión</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate("Register")}>
-           <Text style={styles.buttonText}>📝 Registrarse</Text>
+            <Text style={styles.buttonText}>📝 Registrarse</Text>
           </TouchableOpacity>
-
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -120,7 +130,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 250,
     height: 250,
-    borderRadius: 120, 
+    borderRadius: 120,
     borderWidth: 2,
     borderColor: "#4A90E2",
     resizeMode: "cover",
@@ -152,7 +162,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#4A90E2", 
+    borderColor: "#4A90E2",
   },
   loginButton: {
     backgroundColor: "#4A90E2",
@@ -184,4 +194,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-

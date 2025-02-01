@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.lea32.Miapp'
+    namespace 'com.miempresa.miapp111'
     defaultConfig {
-        applicationId 'com.lea32.Miapp'
+        applicationId 'com.miempresa.miapp111'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

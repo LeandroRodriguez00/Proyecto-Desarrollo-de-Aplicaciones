@@ -28,16 +28,16 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!email.trim() || !password.trim() || !fullName.trim() || !phone.trim() || !address.trim() || !city.trim() || !zipCode.trim()) {
-      showAlert("❌ Error", "Todos los campos son obligatorios.");
+      showAlert("Error", "Todos los campos son obligatorios.");
       return;
     }
 
     try {
       await registerUser(email, password, fullName, phone, address, city, zipCode);
-      showAlert("✅ Registro exitoso", "Ahora puedes iniciar sesión.");
+      showAlert("Registro exitoso", "Ahora puedes iniciar sesión.");
       navigation.navigate("Login");
     } catch (error) {
-      showAlert("❌ Error", error?.message || "No se pudo completar el registro.");
+      showAlert("Error", error?.message || "No se pudo completar el registro.");
     }
   };
 
@@ -45,7 +45,7 @@ export default function RegisterScreen() {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         
-        {/* 🔥 IMAGEN MÁS GRANDE */}
+        {}
         <View style={styles.logoContainer}>
           <Image source={require("../../assets/register.jpg")} style={styles.logo} />
         </View>

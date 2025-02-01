@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { addItem } from "../redux/cartSlice";
@@ -15,8 +16,12 @@ import { fetchCartFromStorage, saveCartToStorage } from "../services/storage";
 export default function ProductDetailsScreen({ route, navigation }) {
   const { productId, productName, productPrice, productDescription, productImage } = route.params;
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false); 
 
   const handleAddToCart = async () => {
+    if (loading) return; 
+    setLoading(true);
+
     const product = { id: productId, name: productName, price: productPrice };
 
     try {
@@ -28,10 +33,12 @@ export default function ProductDetailsScreen({ route, navigation }) {
       await saveCartToStorage(updatedCart);
       dispatch(addItem({ ...product, quantity: 1 }));
 
-      Alert.alert("✅ Éxito", "Producto agregado al carrito.");
+      Alert.alert("Éxito", "Producto agregado al carrito.");
     } catch (error) {
       console.warn("Error al agregar producto al carrito:", error);
-      Alert.alert("❌ Error", "No se pudo agregar el producto al carrito.");
+      Alert.alert("Error", "No se pudo agregar el producto al carrito.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,14 +50,21 @@ export default function ProductDetailsScreen({ route, navigation }) {
         <Text style={styles.title}>{productName}</Text>
         <Text style={styles.price}>💰 Precio: ${productPrice?.toFixed(2) || "0.00"}</Text>
         
-        {}
         <ScrollView style={styles.descriptionContainer}>
           <Text style={styles.description}>{productDescription}</Text>
         </ScrollView>
       </View>
 
-      <TouchableOpacity style={styles.addButton} onPress={handleAddToCart}>
-        <Text style={styles.buttonText}>🛒 Agregar al carrito</Text>
+      <TouchableOpacity 
+        style={styles.addButton} 
+        onPress={handleAddToCart} 
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <Text style={styles.buttonText}>🛒 Agregar al carrito</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate("Cart")}>
@@ -127,3 +141,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+

@@ -21,7 +21,7 @@ export const saveCartToStorage = async (cart) => {
   if (!Array.isArray(cart)) throw new Error("El carrito debe ser un array válido.");
 
   try {
-    const cartClone = JSON.parse(JSON.stringify(cart)); // 🔄 Reemplazo de structuredClone
+    const cartClone = JSON.parse(JSON.stringify(cart)); // 
     await AsyncStorage.setItem('cart', JSON.stringify(cartClone));
   } catch (error) {
     throw new Error("Error al guardar el carrito en AsyncStorage: " + error.message);
