@@ -1,13 +1,14 @@
-import React, { useEffect, useCallback, useState } from "react";
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useState } from "react";
+import { 
+  View, Text, FlatList, StyleSheet, Alert, 
+  TouchableOpacity, ActivityIndicator 
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { replaceCart, removeItem, clearCart } from "../redux/cartSlice";
-import { fetchCartFromStorage, saveCartToStorage } from "../services/storage";
-import { ref, get, set } from "firebase/database";
-import { database } from "../services/firebaseConfig";
+import { removeItem, clearCart } from "../redux/cartSlice";
+import { saveCartToStorage } from "../services/storage";
 import { saveOrderToFirebase } from "../services/orderService";
 
-export default function CartScreen() {
+export default function CartScreen({ navigation }) {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
   const [loading, setLoading] = useState(false);
@@ -35,11 +36,13 @@ export default function CartScreen() {
         Alert.alert("Compra realizada", "Tu pedido ha sido registrado.");
         dispatch(clearCart());
         await saveCartToStorage([]);
+
+        navigation.navigate("Orders"); 
       } else {
         Alert.alert("Error", "No se pudo procesar la compra.");
       }
     } catch (error) {
-      console.warn("Error al procesar la compra:", error);
+      console.error("Error al procesar la compra:", error);
       Alert.alert("Error", "Ocurrió un problema al finalizar la compra.");
     } finally {
       setLoading(false);
@@ -48,46 +51,40 @@ export default function CartScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🛒 Carrito de Compras</Text>
-
       {loading ? (
         <ActivityIndicator size="large" color="#4A90E2" />
+      ) : validCartItems.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No hay productos en el carrito.</Text>
+        </View>
       ) : (
         <>
-          {validCartItems.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No hay productos en el carrito.</Text>
-            </View>
-          ) : (
-            <>
-              <FlatList
-                data={validCartItems}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <View style={styles.item}>
-                    <Text style={styles.itemText}>{item.name}</Text>
-                    <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
-                    <Text style={styles.itemQuantity}>Cantidad: {item.quantity || 1}</Text>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => dispatch(removeItem(item.id))}
-                    >
-                      <Text style={styles.buttonText}>❌ Eliminar</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              />
-              <Text style={styles.totalText}>Total: ${total.toFixed(2)}</Text>
+          <FlatList
+            data={validCartItems}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.item}>
+                <Text style={styles.itemText}>{item.name}</Text>
+                <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+                <Text style={styles.itemQuantity}>Cantidad: {item.quantity || 1}</Text>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => dispatch(removeItem(item.id))}
+                >
+                  <Text style={styles.buttonText}>❌ Eliminar</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+          <Text style={styles.totalText}>Total: ${total.toFixed(2)}</Text>
 
-              <TouchableOpacity style={styles.buyButton} onPress={handlePurchase} disabled={loading}>
-                {loading ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.buttonText}> Comprar</Text>
-                )}
-              </TouchableOpacity>
-            </>
-          )}
+          <TouchableOpacity style={styles.buyButton} onPress={handlePurchase} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.buttonText}> Comprar</Text>
+            )}
+          </TouchableOpacity>
         </>
       )}
     </View>
@@ -99,13 +96,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#222831",
     padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 15,
-    color: "#EEEEEE", 
   },
   emptyContainer: {
     flex: 1,

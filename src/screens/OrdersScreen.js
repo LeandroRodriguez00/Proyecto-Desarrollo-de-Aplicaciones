@@ -36,7 +36,7 @@ export default function OrdersScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>📦 Mis Compras</Text>
+      <Text style={styles.title}>📜 Historial de Compras</Text>
 
       {loading ? (
         <View style={styles.loaderContainer}>
@@ -68,7 +68,6 @@ export default function OrdersScreen() {
             )}
           />
 
-          {}
           <TouchableOpacity style={styles.reloadButton} onPress={loadOrders}>
             <Text style={styles.buttonText}>🔄 Recargar Pedidos</Text>
           </TouchableOpacity>
